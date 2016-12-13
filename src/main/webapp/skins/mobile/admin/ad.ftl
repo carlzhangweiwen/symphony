@@ -1,6 +1,7 @@
 <#include "macro-admin.ftl">
 <@admin "ad">
-<div class="wrapper">
+<div class="content wrapper">
+    <div class="fn-hr10"></div>
     <div class="module">
         <div class="module-header">
             <h2>${modifiableLabel}</h2>

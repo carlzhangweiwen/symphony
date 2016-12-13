@@ -44,11 +44,13 @@ import org.b3log.symphony.model.Article;
 import org.b3log.symphony.model.Common;
 import org.b3log.symphony.model.UserExt;
 import org.b3log.symphony.processor.advice.AnonymousViewCheck;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
-import org.b3log.symphony.service.*;
-import org.b3log.symphony.service.DataModelService;
+import org.b3log.symphony.service.ArticleQueryService;
+import org.b3log.symphony.service.TimelineMgmtService;
+import org.b3log.symphony.service.UserMgmtService;
+import org.b3log.symphony.service.UserQueryService;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Symphonys;
 import org.json.JSONObject;
 
@@ -98,10 +100,10 @@ public class IndexProcessor {
     private UserMgmtService userMgmtService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Language service.
@@ -125,7 +127,7 @@ public class IndexProcessor {
      */
     @RequestProcessing(value = {"", "/"}, method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showIndex(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -170,8 +172,8 @@ public class IndexProcessor {
 
         dataModel.put(Common.SELECTED, Common.INDEX);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
-        dataModelService.fillIndexTags(dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillIndexTags(dataModel);
     }
 
     /**
@@ -184,7 +186,7 @@ public class IndexProcessor {
      */
     @RequestProcessing(value = {"/recent", "/recent/hot", "/recent/good", "/recent/reply"}, method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showRecent(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -265,12 +267,12 @@ public class IndexProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideTags(dataModel);
-        dataModelService.fillLatestCmts(dataModel);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillSideTags(dataModel);
+        filler.fillLatestCmts(dataModel);
 
         dataModel.put(Common.CURRENT, StringUtils.substringAfter(request.getRequestURI(), "/recent"));
     }
@@ -285,7 +287,7 @@ public class IndexProcessor {
      */
     @RequestProcessing(value = "/hot", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHotArticles(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -309,13 +311,13 @@ public class IndexProcessor {
 
         Stopwatchs.start("Fills");
         try {
-            dataModelService.fillHeaderAndFooter(request, response, dataModel);
+            filler.fillHeaderAndFooter(request, response, dataModel);
             if (!(Boolean) dataModel.get(Common.IS_MOBILE)) {
-                dataModelService.fillRandomArticles(avatarViewMode, dataModel);
+                filler.fillRandomArticles(avatarViewMode, dataModel);
             }
-            dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-            dataModelService.fillSideTags(dataModel);
-            dataModelService.fillLatestCmts(dataModel);
+            filler.fillSideHotArticles(avatarViewMode, dataModel);
+            filler.fillSideTags(dataModel);
+            filler.fillLatestCmts(dataModel);
         } finally {
             Stopwatchs.end();
         }
@@ -331,7 +333,7 @@ public class IndexProcessor {
      */
     @RequestProcessing(value = "/symhub", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showSymHub(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -346,13 +348,13 @@ public class IndexProcessor {
         try {
             final int avatarViewMode = (int) request.getAttribute(UserExt.USER_AVATAR_VIEW_MODE);
 
-            dataModelService.fillHeaderAndFooter(request, response, dataModel);
+            filler.fillHeaderAndFooter(request, response, dataModel);
             if (!(Boolean) dataModel.get(Common.IS_MOBILE)) {
-                dataModelService.fillRandomArticles(avatarViewMode, dataModel);
+                filler.fillRandomArticles(avatarViewMode, dataModel);
             }
-            dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-            dataModelService.fillSideTags(dataModel);
-            dataModelService.fillLatestCmts(dataModel);
+            filler.fillSideHotArticles(avatarViewMode, dataModel);
+            filler.fillSideTags(dataModel);
+            filler.fillLatestCmts(dataModel);
         } finally {
             Stopwatchs.end();
         }
@@ -368,7 +370,7 @@ public class IndexProcessor {
      */
     @RequestProcessing(value = "/perfect", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showPerfectArticles(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -409,11 +411,11 @@ public class IndexProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideTags(dataModel);
-        dataModelService.fillLatestCmts(dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillSideTags(dataModel);
+        filler.fillLatestCmts(dataModel);
     }
 
     /**
@@ -441,7 +443,7 @@ public class IndexProcessor {
      */
     @RequestProcessing(value = "/b3log", method = HTTPRequestMethod.GET)
     @Before(adviceClass = StopwatchStartAdvice.class)
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showB3log(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -449,14 +451,14 @@ public class IndexProcessor {
         renderer.setTemplateName("b3log.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         final int avatarViewMode = (int) request.getAttribute(UserExt.USER_AVATAR_VIEW_MODE);
 
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideTags(dataModel);
-        dataModelService.fillLatestCmts(dataModel);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillSideTags(dataModel);
+        filler.fillLatestCmts(dataModel);
     }
 
     /**
@@ -480,6 +482,6 @@ public class IndexProcessor {
 
         dataModel.putAll(langs);
         Keys.fillRuntime(dataModel);
-        dataModelService.fillMinified(dataModel);
+        filler.fillMinified(dataModel);
     }
 }

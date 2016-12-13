@@ -53,7 +53,6 @@ import org.b3log.symphony.model.Option;
 import org.b3log.symphony.model.Pointtransfer;
 import org.b3log.symphony.model.UserExt;
 import org.b3log.symphony.model.Verifycode;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
 import org.b3log.symphony.processor.advice.validate.UserForgetPwdValidation;
@@ -69,7 +68,7 @@ import org.b3log.symphony.service.UserMgmtService;
 import org.b3log.symphony.service.UserQueryService;
 import org.b3log.symphony.service.VerifycodeMgmtService;
 import org.b3log.symphony.service.VerifycodeQueryService;
-import org.b3log.symphony.service.DataModelService;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Sessions;
 import org.b3log.symphony.util.Symphonys;
 import org.json.JSONObject;
@@ -125,10 +124,10 @@ public class LoginProcessor {
     private PointtransferMgmtService pointtransferMgmtService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Verifycode management service.
@@ -189,7 +188,7 @@ public class LoginProcessor {
      */
     @RequestProcessing(value = "/login", method = HTTPRequestMethod.GET)
     @Before(adviceClass = StopwatchStartAdvice.class)
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showLogin(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         if (null != userQueryService.getCurrentUser(request)
@@ -212,7 +211,7 @@ public class LoginProcessor {
         final Map<String, Object> dataModel = renderer.getDataModel();
         dataModel.put(Common.GOTO, referer);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -225,7 +224,7 @@ public class LoginProcessor {
      */
     @RequestProcessing(value = "/forget-pwd", method = HTTPRequestMethod.GET)
     @Before(adviceClass = StopwatchStartAdvice.class)
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showForgetPwd(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -234,7 +233,7 @@ public class LoginProcessor {
 
         renderer.setTemplateName("forget-pwd.ftl");
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -294,7 +293,7 @@ public class LoginProcessor {
      */
     @RequestProcessing(value = "/reset-pwd", method = HTTPRequestMethod.GET)
     @Before(adviceClass = StopwatchStartAdvice.class)
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showResetPwd(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -314,7 +313,7 @@ public class LoginProcessor {
             dataModel.put(User.USER, user);
         }
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -368,7 +367,7 @@ public class LoginProcessor {
      */
     @RequestProcessing(value = "/register", method = HTTPRequestMethod.GET)
     @Before(adviceClass = StopwatchStartAdvice.class)
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showRegister(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         if (null != userQueryService.getCurrentUser(request)
@@ -418,7 +417,7 @@ public class LoginProcessor {
         final String allowRegister = optionQueryService.getAllowRegister();
         dataModel.put(Option.ID_C_MISC_ALLOW_REGISTER, allowRegister);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**

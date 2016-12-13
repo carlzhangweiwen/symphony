@@ -47,13 +47,12 @@ import org.b3log.symphony.model.Common;
 import org.b3log.symphony.model.Notification;
 import org.b3log.symphony.model.UserExt;
 import org.b3log.symphony.processor.advice.LoginCheck;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
 import org.b3log.symphony.service.NotificationMgmtService;
 import org.b3log.symphony.service.NotificationQueryService;
 import org.b3log.symphony.service.UserQueryService;
-import org.b3log.symphony.service.DataModelService;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Symphonys;
 import org.json.JSONObject;
 
@@ -101,10 +100,10 @@ public class NotificationProcessor {
     private NotificationMgmtService notificationMgmtService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Shows [sysAnnounce] notifications.
@@ -116,7 +115,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/sys-announce", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showSysAnnounceNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = (JSONObject) request.getAttribute(User.USER);
@@ -163,7 +162,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -374,7 +373,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/point", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showPointNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = userQueryService.getCurrentUser(request);
@@ -422,7 +421,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -474,7 +473,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/commented", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showCommentedNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = userQueryService.getCurrentUser(request);
@@ -523,7 +522,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -536,7 +535,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/reply", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showReplyNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = userQueryService.getCurrentUser(request);
@@ -585,7 +584,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -598,7 +597,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/at", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showAtNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = userQueryService.getCurrentUser(request);
@@ -648,7 +647,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -661,7 +660,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/following-user", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showFollowingUserNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = userQueryService.getCurrentUser(request);
@@ -711,7 +710,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -724,7 +723,7 @@ public class NotificationProcessor {
      */
     @RequestProcessing(value = "/notifications/broadcast", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showBroadcastNotifications(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
         final JSONObject currentUser = userQueryService.getCurrentUser(request);
@@ -774,7 +773,7 @@ public class NotificationProcessor {
         dataModel.put(Pagination.PAGINATION_PAGE_COUNT, pageCount);
         dataModel.put(Pagination.PAGINATION_PAGE_NUMS, pageNums);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**

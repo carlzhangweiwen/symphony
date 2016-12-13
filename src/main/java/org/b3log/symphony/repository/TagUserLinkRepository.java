@@ -52,8 +52,8 @@ public class TagUserLinkRepository extends AbstractRepository {
      * @throws RepositoryException repository exception
      */
     public int countTagLink(final String tagId) throws RepositoryException {
-        final List<JSONObject> result = select("SELECT count(DISTINCT(linkId)) AS `ret` FROM `" + getName()
-                + "` WHERE `tagId` = ?", tagId);
+        final List<JSONObject> result = select("SELECT count(DISTINCT(linkId)) AS ret FROM " + getName()
+                + " WHERE tagId = ?", tagId);
 
         return result.get(0).optInt("ret");
     }
@@ -119,8 +119,8 @@ public class TagUserLinkRepository extends AbstractRepository {
      * @throws RepositoryException repository exception
      */
     public List<String> getByTagId(final String tagId, final int fetchSize) throws RepositoryException {
-        final List<JSONObject> results = select("SELECT DISTINCT(`linkId`), `linkScore` FROM `" + getName()
-                + "` WHERE `tagId` = ? ORDER BY `linkScore` DESC LIMIT ?", tagId, fetchSize);
+        final List<JSONObject> results = select("SELECT * FROM (SELECT DISTINCT(linkId), linkScore FROM " + getName()
+                + " WHERE tagId = ? ORDER BY linkScore DESC ) WHERE ROWNUM < ?", tagId, fetchSize);
 
         final List<String> ret = new ArrayList<>();
         for (final JSONObject result : results) {
@@ -141,8 +141,8 @@ public class TagUserLinkRepository extends AbstractRepository {
      */
     public List<String> getByTagIdAndUserId(final String tagId, final String userId, final int fetchSize)
             throws RepositoryException {
-        final List<JSONObject> results = select("SELECT `linkId` FROM `" + getName()
-                + "` WHERE `tagId` = ? AND `userId` = ? ORDER BY `linkScore` DESC LIMIT ?", tagId, userId, fetchSize);
+        final List<JSONObject> results = select("SELECT * FROM (SELECT linkId FROM " + getName()
+                + " WHERE tagId = ? AND userId = ? ORDER BY linkScore DESC) WHERE ROWNUM < ?", tagId, userId, fetchSize);
 
         final List<String> ret = new ArrayList<>();
         for (final JSONObject result : results) {

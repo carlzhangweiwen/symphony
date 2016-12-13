@@ -1,6 +1,6 @@
 <#include "macro-admin.ftl">
 <@admin "addArticle">
-<div class="wrapper">
+<div class="content">
     <div class="module">
         <div class="module-header">
             <h2>${addArticleLabel}</h2>

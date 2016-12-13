@@ -1,6 +1,7 @@
 <#include "macro-admin.ftl">
 <@admin "reservedWords">
 <div class="wrapper">
+    <div class="fn-hr10"></div>
     <div class="module">
         <div class="module-header">
             <h2>${unmodifiableLabel}</h2>
@@ -11,7 +12,6 @@
         </div>
     </div>
 
-    <#if permissions["rwUpdateReservedWordBasic"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${modifiableLabel}</h2>
@@ -26,9 +26,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["rwRemoveReservedWord"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2 class="ft-red">${removeLabel}</h2>
@@ -43,6 +41,5 @@
             </form>
         </div>
     </div>
-    </#if>
 </div>
 </@admin>

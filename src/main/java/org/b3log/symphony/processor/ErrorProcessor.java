@@ -35,11 +35,10 @@ import org.b3log.latke.servlet.renderer.freemarker.AbstractFreeMarkerRenderer;
 import org.b3log.latke.util.Locales;
 import org.b3log.symphony.model.Common;
 import org.b3log.symphony.model.UserExt;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
 import org.b3log.symphony.service.TimelineMgmtService;
-import org.b3log.symphony.service.DataModelService;
+import org.b3log.symphony.util.Filler;
 
 /**
  * Error processor.
@@ -69,10 +68,10 @@ public class ErrorProcessor {
     private TimelineMgmtService timelineMgmtService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Handles the error.
@@ -85,7 +84,7 @@ public class ErrorProcessor {
      */
     @RequestProcessing(value = "/error/{statusCode}", method = {HTTPRequestMethod.GET, HTTPRequestMethod.POST})
     @Before(adviceClass = StopwatchStartAdvice.class)
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void handleErrorPage(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String statusCode) throws Exception {
         if (StringUtils.equals("GET", request.getMethod())) {
@@ -100,12 +99,12 @@ public class ErrorProcessor {
 
             final Map<String, Object> dataModel = renderer.getDataModel();
             dataModel.putAll(langPropsService.getAll(Locales.getLocale()));
-            dataModelService.fillHeaderAndFooter(request, response, dataModel);
+            filler.fillHeaderAndFooter(request, response, dataModel);
             if (HttpServletResponse.SC_FORBIDDEN == Integer.valueOf(statusCode)) {
                 dataModel.put(Common.TIMELINES, timelineMgmtService.getTimelines());
-                dataModelService.fillSideHotArticles(UserExt.USER_AVATAR_VIEW_MODE_C_ORIGINAL, dataModel);
-                dataModelService.fillRandomArticles(UserExt.USER_AVATAR_VIEW_MODE_C_ORIGINAL, dataModel);
-                dataModelService.fillSideTags(dataModel);
+                filler.fillSideHotArticles(UserExt.USER_AVATAR_VIEW_MODE_C_ORIGINAL, dataModel);
+                filler.fillRandomArticles(UserExt.USER_AVATAR_VIEW_MODE_C_ORIGINAL, dataModel);
+                filler.fillSideTags(dataModel);
             }
         } else {
             context.renderJSON().renderMsg(statusCode);

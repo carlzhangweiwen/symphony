@@ -1,6 +1,7 @@
 <#include "macro-admin.ftl">
 <@admin "users">
 <div class="wrapper">
+    <div class="fn-hr10"></div>
     <div class="module">
         <div class="module-header">
             <h2>${unmodifiableLabel}</h2>
@@ -61,8 +62,6 @@
             <input type="text" value="${user.userLongestCheckinStreak}" readonly="readonly" />
         </div>
     </div>
-
-    <#if permissions["userUpdateUserBasic"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${modifiableLabel}</h2>
@@ -89,11 +88,11 @@
                 <label for="userIntro">${userIntroLabel}</label>
                 <input type="text" id="userIntro" name="userIntro" value="${user.userIntro}" />
 
-                <label for="userIntro">${avatarURLLabel}</label>
-                <input type="text" id="userAvatarURL" name="userAvatarURL" value="${user.userAvatarURL}" />
-
                 <label for="userListPageSize">${userListPageSizeLabel}</label>
                 <input type="number" id="userListPageSize" name="userListPageSize" value="${user.userListPageSize}" />
+
+                <label for="userIntro">${avatarURLLabel}</label>
+                <input type="text" id="userAvatarURL" name="userAvatarURL" value="${user.userAvatarURL}" />
 
                 <label>${cmtViewModeLabel}</label>
                 <select id="userCommentViewMode" name="userCommentViewMode">
@@ -252,9 +251,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["userUpdateUserAdvanced"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${advancedUpdateLabel}</h2>
@@ -278,9 +275,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["userAddPoint"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${chargePointLabel}</h2>
@@ -301,9 +296,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["userExchangePoint"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${exchangePointLabel}</h2>
@@ -321,9 +314,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["userDeductPoint"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${abusePointLabel}</h2>
@@ -344,7 +335,6 @@
             </form>
         </div>
     </div>
-    </#if>
 
     <div class="module">
         <div class="module-header">

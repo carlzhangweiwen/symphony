@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Description: Symphony POM.
-    Version: 2.14.6.44, Dec 8, 2016
+    Version: 2.14.5.44, Nov 13, 2016
     Author: Liang Ding
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -11,7 +11,7 @@
     <groupId>org.b3log</groupId>
     <artifactId>symphony</artifactId>
     <packaging>war</packaging>
-    <version>1.7.0</version>
+    <version>1.6.0</version>
     <name>Symphony</name>
     <url>https://github.com/b3log/symphony</url>
     <description>
@@ -34,6 +34,12 @@
         <emoji-java.version>3.0.0</emoji-java.version>
         <user-agent-utils.version>1.20</user-agent-utils.version>
         <commons-codec.version>1.10</commons-codec.version>
+
+        <javax.mail.version>1.4</javax.mail.version>
+        <!-- JDBC Connection Pool -->
+        <h2.version>1.4.190</h2.version>
+        <!-- JBoss VFS -->
+        <jboss-vfs.version>3.1.0.Final</jboss-vfs.version>
 
         <!-- maven plugin -->
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
@@ -116,8 +122,54 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-        
+
         <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>${javax.mail.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.12.1.GA</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.18</version>
+        </dependency>
+
+
+
+
+        <!--<dependency>
             <groupId>org.b3log</groupId>
             <artifactId>latke</artifactId>
             <version>${latke.version}</version>
@@ -135,7 +187,7 @@
                     <artifactId>jboss-vfs</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
         
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -155,7 +207,7 @@
             <version>1.1</version>
         </dependency>
         
-        <dependency>
+        <!--<dependency>
             <groupId>org.b3log</groupId>
             <artifactId>latke-repository-mysql</artifactId>
             <version>${latke.version}</version>
@@ -165,8 +217,26 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql-connector-java.version}</version>
+        </dependency>-->
+
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc14</artifactId>
+            <version>10.2.0.4.0</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-vfs</artifactId>
+            <version>${jboss-vfs.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>

@@ -32,11 +32,10 @@ import org.b3log.latke.servlet.renderer.freemarker.AbstractFreeMarkerRenderer;
 import org.b3log.symphony.model.Common;
 import org.b3log.symphony.model.UserExt;
 import org.b3log.symphony.processor.advice.AnonymousViewCheck;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
-import org.b3log.symphony.service.DataModelService;
 import org.b3log.symphony.service.TimelineMgmtService;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Symphonys;
 
 /**
@@ -59,10 +58,10 @@ public class TimelineProcessor {
     private static final Logger LOGGER = Logger.getLogger(TimelineProcessor.class.getName());
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Timeline management service.
@@ -80,7 +79,7 @@ public class TimelineProcessor {
      */
     @RequestProcessing(value = "/timeline", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showTimeline(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);;
@@ -88,16 +87,16 @@ public class TimelineProcessor {
         renderer.setTemplateName("timeline.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         dataModel.put(Common.SELECTED, Common.TIMELINE);
 
         final int avatarViewMode = (int) request.getAttribute(UserExt.USER_AVATAR_VIEW_MODE);
 
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideTags(dataModel);
-        dataModelService.fillLatestCmts(dataModel);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillSideTags(dataModel);
+        filler.fillLatestCmts(dataModel);
 
         dataModel.put("timelineCnt", Symphonys.getInt("timelineCnt"));
         dataModel.put(Common.TIMELINES, timelineMgmtService.getTimelines());

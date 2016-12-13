@@ -1,6 +1,7 @@
 <#include "macro-admin.ftl">
 <@admin "articles">
 <div class="wrapper">
+    <div class="fn-hr10"></div>
     <div class="module">
         <div class="module-header">
             <h2>${unmodifiableLabel}</h2>
@@ -47,16 +48,8 @@
 
             <label for"articleStick">${stickLabel}</label>
             <input type="text" id="articleStick" name="articleStick" value="${article.articleStick?c}" readonly="readonly" />
-
-            <label for="articleAnonymous">${anonymousLabel}</label>
-            <select id="articleAnonymous" name="articleAnonymous" disabled="disabled">
-                <option value="0"<#if 0 == article.articleAnonymous> selected</#if>>${noLabel}</option>
-                <option value="1"<#if 1 == article.articleAnonymous> selected</#if>>${yesLabel}</option>
-            </select>
         </div>
     </div>
-
-    <#if permissions["articleUpdateArticleBasic"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${modifiableLabel}</h2>
@@ -109,7 +102,7 @@
 
                 <label for="articleBadCnt">${badCntLabel}</label>
                 <input type="text" id="articleBadCnt" name="articleBadCnt" value="${article.articleBadCnt}" />
-                
+
                 <label form="articleAnonymousView">${miscAllowAnonymousViewLabel}</label>
                 <select id="articleAnonymousView" name="articleAnonymousView">
                     <option value="0"<#if 0 == article.articleAnonymousView> selected</#if>>${useGlobalLabel}</option>
@@ -122,9 +115,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["articleStickArticle"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${stickLabel}</h2>
@@ -139,9 +130,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["articleCancelStickArticle"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${cancelStickLabel}</h2>
@@ -156,9 +145,8 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if (esEnabled || algoliaEnabled) && permissions["articleReindexArticle"].permissionGrant>
+    <#if esEnabled || algoliaEnabled>
     <div class="module">
         <div class="module-header">
             <h2>${searchIndexLabel}</h2>
@@ -175,7 +163,6 @@
     </div>
     </#if>
 
-    <#if permissions["articleRemoveArticle"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2 class="ft-red">${removeLabel}</h2>
@@ -190,6 +177,5 @@
             </form>
         </div>
     </div>
-    </#if>
 </div>
 </@admin>

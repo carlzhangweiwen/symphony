@@ -18,6 +18,23 @@
 package org.b3log.symphony.processor;
 
 import com.qiniu.util.Auth;
+import java.awt.Graphics;
+import java.awt.Transparency;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import jodd.util.Base64;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +43,7 @@ import org.b3log.latke.Latkes;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.model.Pagination;
+import org.b3log.latke.model.Role;
 import org.b3log.latke.model.User;
 import org.b3log.latke.service.LangPropsService;
 import org.b3log.latke.service.ServiceException;
@@ -41,37 +59,52 @@ import org.b3log.latke.util.Requests;
 import org.b3log.latke.util.Stopwatchs;
 import org.b3log.latke.util.Strings;
 import org.b3log.symphony.cache.DomainCache;
-import org.b3log.symphony.model.*;
-import org.b3log.symphony.processor.advice.*;
+import org.b3log.symphony.model.Article;
+import org.b3log.symphony.model.Client;
+import org.b3log.symphony.model.Comment;
+import org.b3log.symphony.model.Common;
+import org.b3log.symphony.model.Domain;
+import org.b3log.symphony.model.Liveness;
+import org.b3log.symphony.model.Pointtransfer;
+import org.b3log.symphony.model.Referral;
+import org.b3log.symphony.model.Revision;
+import org.b3log.symphony.model.Reward;
+import org.b3log.symphony.model.Tag;
+import org.b3log.symphony.model.UserExt;
+import org.b3log.symphony.processor.advice.AnonymousViewCheck;
+import org.b3log.symphony.processor.advice.CSRFCheck;
+import org.b3log.symphony.processor.advice.CSRFToken;
+import org.b3log.symphony.processor.advice.LoginCheck;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
 import org.b3log.symphony.processor.advice.validate.ArticleAddValidation;
 import org.b3log.symphony.processor.advice.validate.ArticleUpdateValidation;
 import org.b3log.symphony.processor.advice.validate.UserRegisterValidation;
-import org.b3log.symphony.service.*;
+import org.b3log.symphony.service.ArticleMgmtService;
+import org.b3log.symphony.service.ArticleQueryService;
+import org.b3log.symphony.service.CharacterQueryService;
+import org.b3log.symphony.service.ClientMgmtService;
+import org.b3log.symphony.service.ClientQueryService;
+import org.b3log.symphony.service.CommentQueryService;
+import org.b3log.symphony.service.DomainQueryService;
+import org.b3log.symphony.service.FollowQueryService;
+import org.b3log.symphony.service.LivenessMgmtService;
+import org.b3log.symphony.service.ReferralMgmtService;
+import org.b3log.symphony.service.RewardQueryService;
+import org.b3log.symphony.service.ShortLinkQueryService;
+import org.b3log.symphony.service.UserMgmtService;
+import org.b3log.symphony.service.UserQueryService;
+import org.b3log.symphony.service.VoteQueryService;
 import org.b3log.symphony.util.Emotions;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Markdowns;
 import org.b3log.symphony.util.Sessions;
 import org.b3log.symphony.util.Symphonys;
 import org.json.JSONObject;
 
-import javax.imageio.ImageIO;
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.List;
-
 /**
  * Article processor.
- * <p>
+ *
  * <ul>
  * <li>Shows an article (/article/{articleId}), GET</li>
  * <li>Shows article pre adding form page (/pre-post), GET</li>
@@ -89,7 +122,7 @@ import java.util.List;
  * <li>Gets article image (/article/{articleId}/image), GET</li>
  * <li>Checks article title (/article/check-title), POST</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The '<em>locally</em>' means user post an article on Symphony directly rather than receiving an article from
  * externally (for example Rhythm).
@@ -211,16 +244,16 @@ public class ArticleProcessor {
     private DomainCache domainCache;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Checks article title.
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
      * @throws Exception exception
      */
@@ -259,9 +292,9 @@ public class ArticleProcessor {
     /**
      * Gets article image.
      *
-     * @param context   the specified context
-     * @param request   the specified request
-     * @param response  the specified response
+     * @param context the specified context
+     * @param request the specified request
+     * @param response the specified response
      * @param articleId the specified article id
      * @throws Exception exception
      */
@@ -269,7 +302,7 @@ public class ArticleProcessor {
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
     @After(adviceClass = {StopwatchEndAdvice.class})
     public void getArticleImage(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response,
-                                final String articleId) throws Exception {
+            final String articleId) throws Exception {
         final JSONObject article = articleQueryService.getArticle(articleId);
         final String authorId = article.optString(Article.ARTICLE_AUTHOR_ID);
 
@@ -329,9 +362,9 @@ public class ArticleProcessor {
     /**
      * Gets article revisions.
      *
-     * @param context   the specified context
-     * @param request   the specified request
-     * @param response  the specified response
+     * @param context the specified context
+     * @param request the specified request
+     * @param response the specified response
      * @param articleId the specified article id
      * @throws Exception exception
      */
@@ -339,7 +372,7 @@ public class ArticleProcessor {
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
     @After(adviceClass = {StopwatchEndAdvice.class})
     public void getArticleRevisions(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response,
-                                    final String articleId) throws Exception {
+            final String articleId) throws Exception {
         final List<JSONObject> revisions = articleQueryService.getArticleRevisions(articleId);
         final JSONObject ret = new JSONObject();
         ret.put(Keys.STATUS_CODE, true);
@@ -351,14 +384,14 @@ public class ArticleProcessor {
     /**
      * Shows pre-add article.
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
      * @throws Exception exception
      */
     @RequestProcessing(value = "/pre-post", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {CSRFToken.class, PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = {CSRFToken.class, StopwatchEndAdvice.class})
     public void showPreAddArticle(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -369,7 +402,7 @@ public class ArticleProcessor {
 
         dataModel.put(Common.BROADCAST_POINT, Pointtransfer.TRANSFER_SUM_C_ADD_ARTICLE_BROADCAST);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 
     /**
@@ -392,14 +425,14 @@ public class ArticleProcessor {
     /**
      * Shows add article.
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
      * @throws Exception exception
      */
     @RequestProcessing(value = "/post", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {CSRFToken.class, PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = {CSRFToken.class, StopwatchEndAdvice.class})
     public void showAddArticle(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -458,7 +491,7 @@ public class ArticleProcessor {
                     continue;
                 }
 
-                if (!Role.ROLE_ID_C_ADMIN.equals(currentUser.optString(User.USER_ROLE))
+                if (!Role.ADMIN_ROLE.equals(currentUser.optString(User.USER_ROLE))
                         && ArrayUtils.contains(Symphonys.RESERVED_TAGS, tagTitle)) {
                     continue;
                 }
@@ -496,7 +529,7 @@ public class ArticleProcessor {
             dataModel.put(Common.AT, at);
         }
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String rewardEditorPlaceholderLabel = langPropsService.get("rewardEditorPlaceholderLabel");
         rewardEditorPlaceholderLabel = rewardEditorPlaceholderLabel.replace("{point}",
@@ -516,17 +549,17 @@ public class ArticleProcessor {
     /**
      * Shows article with the specified article id.
      *
-     * @param context   the specified context
-     * @param request   the specified request
-     * @param response  the specified response
+     * @param context the specified context
+     * @param request the specified request
+     * @param response the specified response
      * @param articleId the specified article id
      * @throws Exception exception
      */
     @RequestProcessing(value = "/article/{articleId}", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class})
-    @After(adviceClass = {CSRFToken.class, PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = {CSRFToken.class, StopwatchEndAdvice.class})
     public void showArticle(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response,
-                            final String articleId) throws Exception {
+            final String articleId) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
         context.setRenderer(renderer);
 
@@ -547,7 +580,7 @@ public class ArticleProcessor {
             session.setAttribute(Article.ARTICLE_T_ID, articleId);
         }
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         final String authorId = article.optString(Article.ARTICLE_AUTHOR_ID);
         final JSONObject author = userQueryService.getUser(authorId);
@@ -616,9 +649,9 @@ public class ArticleProcessor {
             livenessMgmtService.incLiveness(viewer.optString(Keys.OBJECT_ID), Liveness.LIVENESS_PV);
         }
 
-        dataModelService.fillRelevantArticles(avatarViewMode, dataModel, article);
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillRelevantArticles(avatarViewMode, dataModel, article);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
 
         // Qiniu file upload authenticate
         final Auth auth = Auth.create(Symphonys.get("qiniu.accessKey"), Symphonys.get("qiniu.secretKey"));
@@ -765,6 +798,7 @@ public class ArticleProcessor {
 
     /**
      * Adds an article locally.
+     *
      * <p>
      * The request json object (an article):
      * <pre>
@@ -781,15 +815,14 @@ public class ArticleProcessor {
      * </pre>
      * </p>
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
-     * @throws IOException      io exception
+     * @throws IOException io exception
      * @throws ServletException servlet exception
      */
     @RequestProcessing(value = "/article", method = HTTPRequestMethod.POST)
-    @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class, CSRFCheck.class, ArticleAddValidation.class,
-            PermissionCheck.class})
+    @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class, CSRFCheck.class, ArticleAddValidation.class})
     @After(adviceClass = StopwatchEndAdvice.class)
     public void addArticle(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws IOException, ServletException {
@@ -839,7 +872,7 @@ public class ArticleProcessor {
             final String authorEmail = currentUser.optString(User.USER_EMAIL);
             article.put(Article.ARTICLE_AUTHOR_EMAIL, authorEmail);
 
-            if (!Role.ROLE_ID_C_ADMIN.equals(currentUser.optString(User.USER_ROLE))) {
+            if (!Role.ADMIN_ROLE.equals(currentUser.optString(User.USER_ROLE))) {
                 articleTags = articleMgmtService.filterReservedTags(articleTags);
             }
 
@@ -868,14 +901,14 @@ public class ArticleProcessor {
     /**
      * Shows update article.
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
      * @throws Exception exception
      */
     @RequestProcessing(value = "/update", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {CSRFToken.class, PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = {CSRFToken.class, StopwatchEndAdvice.class})
     public void showUpdateArticle(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final String articleId = request.getParameter("id");
@@ -910,7 +943,7 @@ public class ArticleProcessor {
 
         dataModel.put(Article.ARTICLE, article);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         // Qiniu file upload authenticate
         final Auth auth = Auth.create(Symphonys.get("qiniu.accessKey"), Symphonys.get("qiniu.secretKey"));
@@ -941,6 +974,7 @@ public class ArticleProcessor {
 
     /**
      * Updates an article locally.
+     *
      * <p>
      * The request json object (an article):
      * <pre>
@@ -956,17 +990,17 @@ public class ArticleProcessor {
      * </pre>
      * </p>
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
-     * @param id       the specified article id
+     * @param id the specified article id
      * @throws Exception exception
      */
     @RequestProcessing(value = "/article/{id}", method = HTTPRequestMethod.PUT)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class, CSRFCheck.class, ArticleUpdateValidation.class})
     @After(adviceClass = StopwatchEndAdvice.class)
     public void updateArticle(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response,
-                              final String id) throws Exception {
+            final String id) throws Exception {
         if (Strings.isEmptyOrNull(id)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
 
@@ -1028,7 +1062,7 @@ public class ArticleProcessor {
         final String authorEmail = currentUser.optString(User.USER_EMAIL);
         article.put(Article.ARTICLE_AUTHOR_EMAIL, authorEmail);
 
-        if (!Role.ROLE_ID_C_ADMIN.equals(currentUser.optString(User.USER_ROLE))) {
+        if (!Role.ADMIN_ROLE.equals(currentUser.optString(User.USER_ROLE))) {
             articleTags = articleMgmtService.filterReservedTags(articleTags);
         }
 
@@ -1056,10 +1090,11 @@ public class ArticleProcessor {
 
     /**
      * Adds an article remotely.
+     *
      * <p>
      * This interface will be called by Rhythm, so here is no article data validation, just only validate the B3
-     * key.
-     * </p>
+     * key.</p>
+     *
      * <p>
      * The request json object, for example,
      * <pre>
@@ -1086,8 +1121,8 @@ public class ArticleProcessor {
      * </pre>
      * </p>
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
      * @throws Exception exception
      */
@@ -1095,7 +1130,7 @@ public class ArticleProcessor {
     @Before(adviceClass = StopwatchStartAdvice.class)
     @After(adviceClass = StopwatchEndAdvice.class)
     public void addArticleFromRhythm(final HTTPRequestContext context,
-                                     final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+            final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         context.renderJSON();
 
         final JSONObject requestJSONObject = Requests.parseRequestJSONObject(request, response);
@@ -1190,7 +1225,7 @@ public class ArticleProcessor {
         article.put(Article.ARTICLE_CONTENT, articleContent);
         article.put(Article.ARTICLE_CLIENT_ARTICLE_PERMALINK, clientHost + permalink);
 
-        if (!Role.ROLE_ID_C_ADMIN.equals(user.optString(User.USER_ROLE))) {
+        if (!Role.ADMIN_ROLE.equals(user.optString(User.USER_ROLE))) {
             articleTags = articleMgmtService.filterReservedTags(articleTags);
         }
 
@@ -1240,10 +1275,11 @@ public class ArticleProcessor {
 
     /**
      * Updates an article remotely.
+     *
      * <p>
      * This interface will be called by Rhythm, so here is no article data validation, just only validate the B3
-     * key.
-     * </p>
+     * key.</p>
+     *
      * <p>
      * The request json object, for example,
      * <pre>
@@ -1270,8 +1306,8 @@ public class ArticleProcessor {
      * </pre>
      * </p>
      *
-     * @param context  the specified context
-     * @param request  the specified request
+     * @param context the specified context
+     * @param request the specified request
      * @param response the specified response
      * @throws Exception exception
      */
@@ -1279,7 +1315,7 @@ public class ArticleProcessor {
     @Before(adviceClass = StopwatchStartAdvice.class)
     @After(adviceClass = StopwatchEndAdvice.class)
     public void updateArticleFromRhythm(final HTTPRequestContext context,
-                                        final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+            final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         context.renderJSON();
 
         final JSONObject requestJSONObject = Requests.parseRequestJSONObject(request, response);
@@ -1361,7 +1397,7 @@ public class ArticleProcessor {
         article.put(Article.ARTICLE_T_IS_BROADCAST, false);
         article.put(Article.ARTICLE_CLIENT_ARTICLE_PERMALINK, clientHost + permalink);
 
-        if (!Role.ROLE_ID_C_ADMIN.equals(user.optString(User.USER_ROLE))) {
+        if (!Role.ADMIN_ROLE.equals(user.optString(User.USER_ROLE))) {
             articleTags = articleMgmtService.filterReservedTags(articleTags);
         }
 
@@ -1407,6 +1443,7 @@ public class ArticleProcessor {
 
     /**
      * Markdowns.
+     *
      * <p>
      * Renders the response with a json object, for example,
      * <pre>
@@ -1416,9 +1453,9 @@ public class ArticleProcessor {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
+     * @param request the specified http servlet request
      * @param response the specified http servlet response
-     * @param context  the specified http request context
+     * @param context the specified http request context
      * @throws Exception exception
      */
     @RequestProcessing(value = "/markdown", method = HTTPRequestMethod.POST)
@@ -1457,7 +1494,7 @@ public class ArticleProcessor {
 
     /**
      * Gets article preview content.
-     * <p>
+     *
      * <p>
      * Renders the response with a json object, for example,
      * <pre>
@@ -1467,9 +1504,9 @@ public class ArticleProcessor {
      * </pre>
      * </p>
      *
-     * @param request   the specified http servlet request
-     * @param response  the specified http servlet response
-     * @param context   the specified http request context
+     * @param request the specified http servlet request
+     * @param response the specified http servlet response
+     * @param context the specified http request context
      * @param articleId the specified article id
      * @throws Exception exception
      */
@@ -1477,7 +1514,7 @@ public class ArticleProcessor {
     @Before(adviceClass = StopwatchStartAdvice.class)
     @After(adviceClass = StopwatchEndAdvice.class)
     public void getArticlePreviewContent(final HttpServletRequest request, final HttpServletResponse response,
-                                         final HTTPRequestContext context, final String articleId) throws Exception {
+            final HTTPRequestContext context, final String articleId) throws Exception {
         final String content = articleQueryService.getArticlePreviewContent(articleId, request);
         if (StringUtils.isBlank(content)) {
             context.renderJSON().renderFalseResult();
@@ -1491,9 +1528,9 @@ public class ArticleProcessor {
     /**
      * Article rewards.
      *
-     * @param request  the specified http servlet request
+     * @param request the specified http servlet request
      * @param response the specified http servlet response
-     * @param context  the specified http request context
+     * @param context the specified http request context
      * @throws Exception exception
      */
     @RequestProcessing(value = "/article/reward", method = HTTPRequestMethod.POST)
@@ -1535,9 +1572,9 @@ public class ArticleProcessor {
     /**
      * Article thanks.
      *
-     * @param request  the specified http servlet request
+     * @param request the specified http servlet request
      * @param response the specified http servlet response
-     * @param context  the specified http request context
+     * @param context the specified http request context
      * @throws Exception exception
      */
     @RequestProcessing(value = "/article/thank", method = HTTPRequestMethod.POST)
@@ -1575,9 +1612,9 @@ public class ArticleProcessor {
     /**
      * Sticks an article.
      *
-     * @param request  the specified HTTP servlet request
+     * @param request the specified HTTP servlet request
      * @param response the specified HTTP servlet response
-     * @param context  the specified HTTP request context
+     * @param context the specified HTTP request context
      * @throws Exception exception
      */
     @RequestProcessing(value = "/article/stick", method = HTTPRequestMethod.POST)
@@ -1628,9 +1665,9 @@ public class ArticleProcessor {
     /**
      * Expires a sticked article.
      *
-     * @param request  the specified HTTP servlet request
+     * @param request the specified HTTP servlet request
      * @param response the specified HTTP servlet response
-     * @param context  the specified HTTP request context
+     * @param context the specified HTTP request context
      * @throws Exception exception
      */
     @RequestProcessing(value = "/cron/article/stick-expire", method = HTTPRequestMethod.GET)

@@ -34,6 +34,7 @@ import org.b3log.latke.Keys;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.model.Pagination;
+import org.b3log.latke.model.Role;
 import org.b3log.latke.model.User;
 import org.b3log.latke.service.LangPropsService;
 import org.b3log.latke.service.ServiceException;
@@ -57,10 +58,13 @@ import org.b3log.symphony.model.Follow;
 import org.b3log.symphony.model.Invitecode;
 import org.b3log.symphony.model.Notification;
 import org.b3log.symphony.model.Pointtransfer;
-import org.b3log.symphony.model.Role;
 import org.b3log.symphony.model.Tag;
 import org.b3log.symphony.model.UserExt;
-import org.b3log.symphony.processor.advice.*;
+import org.b3log.symphony.processor.advice.AnonymousViewCheck;
+import org.b3log.symphony.processor.advice.CSRFCheck;
+import org.b3log.symphony.processor.advice.CSRFToken;
+import org.b3log.symphony.processor.advice.LoginCheck;
+import org.b3log.symphony.processor.advice.UserBlockCheck;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
 import org.b3log.symphony.processor.advice.validate.PointTransferValidation;
@@ -85,7 +89,7 @@ import org.b3log.symphony.service.PointtransferQueryService;
 import org.b3log.symphony.service.PostExportService;
 import org.b3log.symphony.service.UserMgmtService;
 import org.b3log.symphony.service.UserQueryService;
-import org.b3log.symphony.service.DataModelService;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Languages;
 import org.b3log.symphony.util.Networks;
 import org.b3log.symphony.util.Results;
@@ -192,10 +196,10 @@ public class UserProcessor {
     private EmotionMgmtService emotionMgmtService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Avatar query service.
@@ -308,14 +312,14 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/forge/link", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showLinkForge(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/link-forge.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
         user.put(UserExt.USER_T_CREATE_TIME, new Date(user.getLong(Keys.OBJECT_ID)));
@@ -451,7 +455,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = {"/settings", "/settings/*"}, method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {CSRFToken.class, PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = {CSRFToken.class, StopwatchEndAdvice.class})
     public void showSettings(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -492,7 +496,7 @@ public class UserProcessor {
         final long fileMaxSize = Symphonys.getLong("upload.file.maxSize");
         dataModel.put("fileMaxSize", fileMaxSize);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String inviteTipLabel = (String) dataModel.get("inviteTipLabel");
         inviteTipLabel = inviteTipLabel.replace("{point}", String.valueOf(Pointtransfer.TRANSFER_SUM_C_INVITE_REGISTER));
@@ -562,14 +566,14 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/comments/anonymous", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomeAnonymousComments(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/comments.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         final boolean isLoggedIn = (Boolean) dataModel.get(Common.IS_LOGGED_IN);
         JSONObject currentUser = null;
@@ -580,7 +584,7 @@ public class UserProcessor {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
 
         if (null == currentUser || (!currentUser.optString(Keys.OBJECT_ID).equals(user.optString(Keys.OBJECT_ID)))
-                && !Role.ROLE_ID_C_ADMIN.equals(currentUser.optString(User.USER_ROLE))) {
+                && !Role.ADMIN_ROLE.equals(currentUser.optString(User.USER_ROLE))) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
 
             return;
@@ -652,14 +656,14 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/articles/anonymous", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showAnonymousArticles(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/home.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         final boolean isLoggedIn = (Boolean) dataModel.get(Common.IS_LOGGED_IN);
         JSONObject currentUser = null;
@@ -670,7 +674,7 @@ public class UserProcessor {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
 
         if (null == currentUser || (!currentUser.optString(Keys.OBJECT_ID).equals(user.optString(Keys.OBJECT_ID)))
-                && !Role.ROLE_ID_C_ADMIN.equals(currentUser.optString(User.USER_ROLE))) {
+                && !Role.ADMIN_ROLE.equals(currentUser.optString(User.USER_ROLE))) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
 
             return;
@@ -768,7 +772,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHome(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response,
             final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -783,7 +787,7 @@ public class UserProcessor {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
         context.setRenderer(renderer);
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         final String followingId = user.optString(Keys.OBJECT_ID);
         dataModel.put(Follow.FOLLOWING_ID, followingId);
@@ -849,7 +853,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/comments", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomeComments(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response,
             final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -858,7 +862,7 @@ public class UserProcessor {
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/comments.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String pageNumStr = request.getParameter("p");
         if (Strings.isEmptyOrNull(pageNumStr) || !Strings.isNumeric(pageNumStr)) {
@@ -922,7 +926,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/following/users", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomeFollowingUsers(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -931,7 +935,7 @@ public class UserProcessor {
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/following-users.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String pageNumStr = request.getParameter("p");
         if (Strings.isEmptyOrNull(pageNumStr) || !Strings.isNumeric(pageNumStr)) {
@@ -1001,7 +1005,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/following/tags", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomeFollowingTags(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -1010,7 +1014,7 @@ public class UserProcessor {
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/following-tags.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String pageNumStr = request.getParameter("p");
         if (Strings.isEmptyOrNull(pageNumStr) || !Strings.isNumeric(pageNumStr)) {
@@ -1079,7 +1083,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/following/articles", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomeFollowingArticles(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -1088,7 +1092,7 @@ public class UserProcessor {
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/following-articles.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String pageNumStr = request.getParameter("p");
         if (Strings.isEmptyOrNull(pageNumStr) || !Strings.isNumeric(pageNumStr)) {
@@ -1158,7 +1162,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/followers", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomeFollowers(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -1167,7 +1171,7 @@ public class UserProcessor {
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/followers.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String pageNumStr = request.getParameter("p");
         if (Strings.isEmptyOrNull(pageNumStr) || !Strings.isNumeric(pageNumStr)) {
@@ -1238,7 +1242,7 @@ public class UserProcessor {
      */
     @RequestProcessing(value = "/member/{userName}/points", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, AnonymousViewCheck.class, UserBlockCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showHomePoints(final HTTPRequestContext context, final HttpServletRequest request,
             final HttpServletResponse response, final String userName) throws Exception {
         final JSONObject user = (JSONObject) request.getAttribute(User.USER);
@@ -1247,7 +1251,7 @@ public class UserProcessor {
         context.setRenderer(renderer);
         renderer.setTemplateName("/home/points.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         String pageNumStr = request.getParameter("p");
         if (Strings.isEmptyOrNull(pageNumStr) || !Strings.isNumeric(pageNumStr)) {

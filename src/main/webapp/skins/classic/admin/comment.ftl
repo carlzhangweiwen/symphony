@@ -31,8 +31,6 @@
             </select>
         </div>
     </div>
-
-    <#if permissions["commentUpdateCommentBasic"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2>${modifiableLabel}</h2>
@@ -59,9 +57,7 @@
             </form>
         </div>
     </div>
-    </#if>
 
-    <#if permissions["commentRemoveComment"].permissionGrant>
     <div class="module">
         <div class="module-header">
             <h2 class="ft-red">${removeLabel}</h2>
@@ -76,6 +72,5 @@
             </form>
         </div>
     </div>
-    </#if>
 </div>
 </@admin>

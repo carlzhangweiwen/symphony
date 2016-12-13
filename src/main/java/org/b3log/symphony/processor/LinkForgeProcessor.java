@@ -40,13 +40,12 @@ import org.b3log.symphony.model.Link;
 import org.b3log.symphony.model.Option;
 import org.b3log.symphony.model.Tag;
 import org.b3log.symphony.processor.advice.LoginCheck;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
-import org.b3log.symphony.service.DataModelService;
 import org.b3log.symphony.service.LinkForgeMgmtService;
 import org.b3log.symphony.service.LinkForgeQueryService;
 import org.b3log.symphony.service.OptionQueryService;
+import org.b3log.symphony.util.Filler;
 import org.json.JSONObject;
 
 /**
@@ -88,10 +87,10 @@ public class LinkForgeProcessor {
     private OptionQueryService optionQueryService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Submits a link into forge.
@@ -135,7 +134,7 @@ public class LinkForgeProcessor {
      */
     @RequestProcessing(value = "/forge/link", method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showLinkForge(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
             throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -156,6 +155,6 @@ public class LinkForgeProcessor {
         final int linkCnt = statistic.optInt(Option.ID_C_STATISTIC_LINK_COUNT);
         dataModel.put(Link.LINK_T_COUNT, linkCnt);
 
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
     }
 }

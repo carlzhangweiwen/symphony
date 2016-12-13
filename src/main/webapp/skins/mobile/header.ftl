@@ -15,10 +15,8 @@
                 <span class="avatar-small" style="background-image:url('${currentUser.userAvatarURL20}')"></span>
             </a>
             <a href="${servePath}/activities" title="${activityLabel}" class="icon-flag"></a>
-            <#if permissions["commonAddArticle"].permissionGrant>
-                <a href="${servePath}/pre-post" title="${addArticleLabel}"
+            <a href="${servePath}/pre-post" title="${addArticleLabel}" 
                class="icon-addfile"></a>
-            </#if>
             <a id="aNotifications" class="<#if unreadNotificationCount == 0>no-msg<#else>msg</#if>" href="${servePath}/notifications" title="${messageLabel}">${unreadNotificationCount}</a>
             <a href="${servePath}/recent" class="icon-refresh"></a>
             <#else>

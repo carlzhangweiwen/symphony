@@ -44,11 +44,13 @@ import org.b3log.symphony.model.Common;
 import org.b3log.symphony.model.Option;
 import org.b3log.symphony.model.UserExt;
 import org.b3log.symphony.processor.advice.LoginCheck;
-import org.b3log.symphony.processor.advice.PermissionGrant;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchEndAdvice;
 import org.b3log.symphony.processor.advice.stopwatch.StopwatchStartAdvice;
-import org.b3log.symphony.service.*;
-import org.b3log.symphony.service.DataModelService;
+import org.b3log.symphony.service.ArticleQueryService;
+import org.b3log.symphony.service.AvatarQueryService;
+import org.b3log.symphony.service.OptionQueryService;
+import org.b3log.symphony.service.UserQueryService;
+import org.b3log.symphony.util.Filler;
 import org.b3log.symphony.util.Symphonys;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,10 +77,10 @@ public class CityProcessor {
     private ArticleQueryService articleQueryService;
 
     /**
-     * Data model service.
+     * Filler.
      */
     @Inject
-    private DataModelService dataModelService;
+    private Filler filler;
 
     /**
      * Option query service.
@@ -115,7 +117,7 @@ public class CityProcessor {
      */
     @RequestProcessing(value = {"/city/{city}", "/city/{city}/articles"}, method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showCityArticles(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response, final String city) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -123,16 +125,16 @@ public class CityProcessor {
 
         renderer.setTemplateName("city.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         dataModel.put(Common.CURRENT, "");
 
         final int avatarViewMode = (int) request.getAttribute(UserExt.USER_AVATAR_VIEW_MODE);
 
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideTags(dataModel);
-        dataModelService.fillLatestCmts(dataModel);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillSideTags(dataModel);
+        filler.fillLatestCmts(dataModel);
 
         List<JSONObject> articles = new ArrayList<>();
         dataModel.put(Article.ARTICLES, articles); // an empty list to avoid null check in template
@@ -206,7 +208,7 @@ public class CityProcessor {
      */
     @RequestProcessing(value = {"/city/{city}/users"}, method = HTTPRequestMethod.GET)
     @Before(adviceClass = {StopwatchStartAdvice.class, LoginCheck.class})
-    @After(adviceClass = {PermissionGrant.class, StopwatchEndAdvice.class})
+    @After(adviceClass = StopwatchEndAdvice.class)
     public void showCityUsers(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response, final String city) throws Exception {
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
@@ -214,15 +216,15 @@ public class CityProcessor {
 
         renderer.setTemplateName("city.ftl");
         final Map<String, Object> dataModel = renderer.getDataModel();
-        dataModelService.fillHeaderAndFooter(request, response, dataModel);
+        filler.fillHeaderAndFooter(request, response, dataModel);
 
         dataModel.put(Common.CURRENT, "/users");
 
         final int avatarViewMode = (int) request.getAttribute(UserExt.USER_AVATAR_VIEW_MODE);
-        dataModelService.fillRandomArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideHotArticles(avatarViewMode, dataModel);
-        dataModelService.fillSideTags(dataModel);
-        dataModelService.fillLatestCmts(dataModel);
+        filler.fillRandomArticles(avatarViewMode, dataModel);
+        filler.fillSideHotArticles(avatarViewMode, dataModel);
+        filler.fillSideTags(dataModel);
+        filler.fillLatestCmts(dataModel);
 
         List<JSONObject> users = new ArrayList<>();
         dataModel.put(User.USERS, users);

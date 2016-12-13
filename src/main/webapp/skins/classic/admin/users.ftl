@@ -6,14 +6,12 @@
         <form method="GET" action="${servePath}/admin/users" class="form">
             <input name="userNameOrEmail" type="text" placeholder="${userNameLabel}/${userEmailLabel}"/>
             <button type="submit" class="green">${searchLabel}</button> &nbsp;
-            <#if permissions["userAddUser"].permissionGrant>
             <button type="button" class="btn red" onclick="window.location = '${servePath}/admin/add-user'">${addUserLabel}</button>
-            </#if>
         </form>
         <ul>
             <#list users as item>
             <li>
-                <div class="fn-clear">
+                <div class="fn-clear first">
                     <div class="avatar-small tooltipped tooltipped-se" aria-label="${item.userName}" 
                          style="background-image:url('${item.userAvatarURL}')"></div> &nbsp;
                     <a href="${servePath}/member/${item.userName}">${item.userName}</a>

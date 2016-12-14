@@ -55,7 +55,7 @@ public class PointtransferRepository extends AbstractRepository {
             final List<JSONObject> result = select("SELECT\n"
                     + "	AVG(sum) AS point\n"
                     + "FROM\n"
-                    + "	symphony_pointtransfer\n"
+                    + "	`symphony_pointtransfer`\n"
                     + "WHERE\n"
                     + "	type = 27\n"
                     + "AND toId = ?\n"

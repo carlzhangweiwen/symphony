@@ -317,7 +317,7 @@ public final class JdbcRepositories {
      * @return List<CreateTableResult>
      */
     public static List<CreateTableResult> initAllTables() {
-        final List<CreateTableResult> ret = new ArrayList<JdbcRepositories.CreateTableResult>();
+        final List<CreateTableResult> ret = new ArrayList<CreateTableResult>();
         final Map<String, List<FieldDefinition>> map = getRepositoriesMap();
 
         boolean isSuccess = false;

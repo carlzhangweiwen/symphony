@@ -1652,7 +1652,7 @@ public class ArticleQueryService {
             List<JSONObject> ret;
             Stopwatchs.start("Query index recent articles");
             try {
-                ret = articleRepository.select("SELECT * FROM (SELECT\n"
+                ret = articleRepository.select("SELECT\n"
                         + "	oId,\n"
                         + "	articleStick,\n"
                         + "	articleCreateTime,\n"
@@ -1675,15 +1675,17 @@ public class ArticleQueryService {
                         + "WHEN articleLatestCmtTime = 0 THEN\n"
                         + "	oId\n"
                         + "ELSE\n"
-                        + "	TO_CHAR(articleLatestCmtTime)\n"
+                        + "	articleLatestCmtTime\n"
                         + "END AS flag\n"
                         + "FROM\n"
-                        + "	symphony_article\n"
-                        + " WHERE articleType != 1 AND articleStatus = 0 AND articleTags != 'Sandbox'\n"
+                        + "	`symphony_article`\n"
+                        + " WHERE `articleType` != 1 AND `articleStatus` = 0 AND `articleTags` != 'Sandbox'\n"
                         + " ORDER BY\n"
                         + "	articleStick DESC,\n"
                         + "	flag DESC\n"
-                        + ") WHERE ROWNUM < ?", Symphonys.getInt("indexListCnt"));
+//                        + "LIMIT ?"
+                        , Symphonys.getInt("indexListCnt")
+                );
             } finally {
                 Stopwatchs.end();
             }

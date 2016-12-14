@@ -27,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
  * Stop watch utilities for timing of a thread of tasks.
  *
  * <p>
- * Invokes method {@link #start(java.lang.String)} for timing a task, invokes method {@link #end()} for stop timing the
+ * Invokes method {@link #start(String)} for timing a task, invokes method {@link #end()} for stop timing the
  * corresponding task, the start and end must match exactly.
  * </p>
  *
@@ -86,7 +86,7 @@ import org.apache.commons.lang.StringUtils;
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
  * @version 1.0.0.3, May 30, 2012
- * @see org.b3log.latke.util.Stopwatchs.Stopwatch
+ * @see Stopwatch
  * @see Stopwatchs#getTimingStat()
  */
 public final class Stopwatchs {
@@ -121,7 +121,7 @@ public final class Stopwatchs {
     }
 
     /**
-     * Ends the timing of the recent task started by {@link #start(java.lang.String)}.
+     * Ends the timing of the recent task started by {@link #start(String)}.
      */
     public static void end() {
         final Stopwatch root = STOPWATCH.get();
@@ -180,11 +180,11 @@ public final class Stopwatchs {
      * @param taskTitle the specified task title
      * @return
      * <ul>
-     * <li>{@linkplain org.b3log.latke.util.Stopwatchs.Stopwatch#getElapsedTime() elapsed time} of the found task if it
-     * {@linkplain org.b3log.latke.util.Stopwatchs.Stopwatch#isEnded() is ended}</li>
+     * <li>{@linkplain Stopwatch#getElapsedTime() elapsed time} of the found task if it
+     * {@linkplain Stopwatch#isEnded() is ended}</li>
      * <li>{@linkplain System#currentTimeMillis() the current time} subtracts
-     * {@linkplain org.b3log.latke.util.Stopwatchs.Stopwatch#startTime the start time} of the found task if it
-     * {@linkplain org.b3log.latke.util.Stopwatchs.Stopwatch#isRunning() is running} </li>
+     * {@linkplain Stopwatch#startTime the start time} of the found task if it
+     * {@linkplain Stopwatch#isRunning() is running} </li>
      * <li>{@code -1} if not found any stopwatch corresponding to the specified task title</li>
      * </ul>
      */

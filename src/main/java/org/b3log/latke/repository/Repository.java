@@ -92,7 +92,7 @@ public interface Repository {
      *
      * <p>
      * <b>Note</b>: The order of elements of the returned result list is decided by datastore implementation, excepts
-     * {@link Query#addSort(java.lang.String, org.b3log.latke.repository.SortDirection)} be invoked.
+     * {@link Query#addSort(String, org.b3log.latke.repository.SortDirection)} be invoked.
      * </p>
      *
      * @param query the specified query

@@ -213,7 +213,7 @@ public final class Locales {
     }
 
     /**
-     * Gest a {@link java.util.Locale} with the specified locale string.
+     * Gest a {@link Locale} with the specified locale string.
      *
      * @param localeString the specified locale string
      * @return locale

@@ -94,7 +94,7 @@ final class MailSender {
      * javax.mail.Message}.
      *
      * @param message the specified message
-     * @return a {@link javax.mail.internet.MimeMessage}
+     * @return a {@link MimeMessage}
      * @throws Exception if converts error
      */
     public javax.mail.Message convert2JavaMailMsg(final Message message) throws Exception {

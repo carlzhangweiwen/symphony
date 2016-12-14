@@ -30,7 +30,7 @@ import org.b3log.latke.logging.Logger;
  * Command execution utilities.
  *
  * <p>
- * Uses {@link Runtime#exec(java.lang.String)} to execute command, to avoid the execution be blocked, starts a thread to
+ * Uses {@link Runtime#exec(String)} to execute command, to avoid the execution be blocked, starts a thread to
  * read error stream from th executing sub process.
  * </p>
  *

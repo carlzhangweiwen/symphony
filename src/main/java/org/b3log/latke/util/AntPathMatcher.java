@@ -450,8 +450,8 @@ public final class AntPathMatcher {
      * will not consider subsequent delimiters as token in the first place).
      * @return an array of the tokens (<code>null</code> if the input String
      * was <code>null</code>)
-     * @see java.util.StringTokenizer
-     * @see java.lang.String#trim()
+     * @see StringTokenizer
+     * @see String#trim()
      */
     private static String[] tokenizeToStringArray(String str, String delimiters) {
 

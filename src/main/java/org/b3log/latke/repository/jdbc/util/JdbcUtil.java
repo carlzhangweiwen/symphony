@@ -16,6 +16,7 @@
 package org.b3log.latke.repository.jdbc.util;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -83,9 +84,13 @@ public final class JdbcUtil {
 
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
-        for (int i = 1; i <= paramList.size(); i++) {
-            preparedStatement.setObject(i, paramList.get(i - 1));
+        if(sql.contains("?")){
+            //增加判断，如果不需要参数，则不用set
+            for (int i = 1; i <= paramList.size(); i++) {
+                preparedStatement.setObject(i, paramList.get(i - 1));
+            }
         }
+
         final boolean isSuccess = preparedStatement.execute();
 
         preparedStatement.close();
@@ -151,17 +156,9 @@ public final class JdbcUtil {
 
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
-//        if(sql.contains("?")){
-            for (int i = 1; i <= paramList.size(); i++) {
-//                if("V".equals(paramList.get(i - 1))){
-//                    preparedStatement.setObject(i, "admin");
-//                }else {
-                    preparedStatement.setObject(i, paramList.get(i - 1));
-                }
-
-//            }
-//        }
-
+        for (int i = 1; i <= paramList.size(); i++) {
+            preparedStatement.setObject(i, paramList.get(i - 1));
+        }
 
         final ResultSet resultSet = preparedStatement.executeQuery();
 
@@ -232,23 +229,41 @@ public final class JdbcUtil {
                         final Clob clob = (Clob) v;
 
                         String str = null;
-
+                        Reader clobCharacterStream = null;
                         try {
-                            str = IOUtils.toString(clob.getCharacterStream());
+                            clobCharacterStream = clob.getCharacterStream();
+                            str = IOUtils.toString(clobCharacterStream);
                         } catch (final IOException e) {
                             LOGGER.log(Level.ERROR,
                                     "Cant not read column[name=" + columnName + "] in table[name=" + tableName + "] on H2", e);
                         } finally {
-                            try {
-                                clob.free();
-                            } catch (final Exception e) { // Some drivers dose not implement free(), for example, jtds
-                                LOGGER.log(Level.ERROR, "clob.free error", e);
+
+                            if(RuntimeDatabase.ORACLE == Latkes.getRuntimeDatabase()){
+                                //no need exec clob.free
+                                try {
+                                    clobCharacterStream.close();
+                                } catch (IOException e) {
+                                    LOGGER.log(Level.ERROR, "clob.clobCharacterStream.close error", e);
+                                }
+                            }else {
+                                try {
+                                    clob.free();
+                                } catch (final Exception e) { // Some drivers dose not implement free(), for example, jtds
+                                    LOGGER.log(Level.ERROR, "clob.free error", e);
+                                }
                             }
+
                         }
 
                         jsonObject.put(definition.getName(), str);
                     } else {
-                        jsonObject.put(definition.getName(), v);
+                        if(v == null){
+                            //如果是空,oracle 得到的是null
+                            jsonObject.put(definition.getName(), "");
+                        }else {
+                            //如果是空,mysql 得到的是""
+                            jsonObject.put(definition.getName(), v);
+                        }
                     }
                 }
             }

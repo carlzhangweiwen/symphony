@@ -57,7 +57,7 @@ public final class Latkes {
     private static final Logger LOGGER = Logger.getLogger(Latkes.class.getName());
 
     /**
-     * Locale. Initializes this by {@link #setLocale(java.util.Locale)}.
+     * Locale. Initializes this by {@link #setLocale(Locale)}.
      */
     private static Locale locale;
 
@@ -822,8 +822,8 @@ public final class Latkes {
      *
      * @param path the specified path
      * @return file,
-     * @see javax.servlet.ServletContext#getResource(java.lang.String)
-     * @see javax.servlet.ServletContext#getResourceAsStream(java.lang.String)
+     * @see ServletContext#getResource(String)
+     * @see ServletContext#getResourceAsStream(String)
      */
     public static File getWebFile(final String path) {
         final ServletContext servletContext = AbstractServletListener.getServletContext();

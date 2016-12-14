@@ -20,7 +20,7 @@ package org.b3log.latke.taskqueue;
  * Task handle. 
  * 
  * <p>
- * Created from {@link Queue#add(org.b3log.latke.taskqueue.Task)}, for a task
+ * Created from {@link Queue#add(Task)}, for a task
  * in a task queue.
  * </p>
  *

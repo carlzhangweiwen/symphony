@@ -100,7 +100,7 @@ public class ActivityQueryService {
         final List<JSONObject> ret = new ArrayList<>();
 
         try {
-            final List<JSONObject> users = userRepository.select("SELECT * FROM (SELECT\n"
+            final List<JSONObject> users = userRepository.select("SELECT\n"
                     + "	u.*, MAX(sum) AS point\n"
                     + "FROM\n"
                     + "	" + pointtransferRepository.getName() + " AS p,\n"
@@ -112,7 +112,8 @@ public class ActivityQueryService {
                     + "	toId\n"
                     + "ORDER BY\n"
                     + "	point DESC\n"
-                    + ") WHERE ROWNUM < ?", fetchSize);
+//                    + "LIMIT ?"
+                    , fetchSize);
 
             for (final JSONObject user : users) {
                 avatarQueryService.fillUserAvatarURL(avatarViewMode, user);
@@ -137,7 +138,7 @@ public class ActivityQueryService {
         final List<JSONObject> ret = new ArrayList<>();
 
         try {
-            final List<JSONObject> users = userRepository.select("SELECT * FROM (SELECT\n"
+            final List<JSONObject> users = userRepository.select("SELECT\n"
                     + "	u.*, Sum(sum) AS point\n"
                     + "FROM\n"
                     + "	" + pointtransferRepository.getName() + " AS p,\n"
@@ -149,7 +150,8 @@ public class ActivityQueryService {
                     + "	toId\n"
                     + "ORDER BY\n"
                     + "	point DESC\n"
-                    + ") WHERE ROWNUM < ?", fetchSize);
+//                    + "LIMIT ?"
+                    , fetchSize);
 
             for (final JSONObject user : users) {
                 avatarQueryService.fillUserAvatarURL(avatarViewMode, user);

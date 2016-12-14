@@ -154,8 +154,8 @@ public final class Repositories {
      * @param jsonObject the specified json object
      * @param ignoredKeys the specified keys to ignore
      * @throws RepositoryException if the specified json object can not be persisted
-     * @see Repository#add(org.json.JSONObject) 
-     * @see Repository#update(java.lang.String, org.json.JSONObject) 
+     * @see Repository#add(JSONObject)
+     * @see Repository#update(String, JSONObject)
      */
     public static void check(final String repositoryName, final JSONObject jsonObject, final String... ignoredKeys)
         throws RepositoryException {
@@ -190,10 +190,13 @@ public final class Repositories {
                 continue;
             }
 
-//            if (!keyDescription.optBoolean("nullable") && !nameSet.contains(key)) {
-//                throw new RepositoryException(
-//                    "A json object to persist to repository[name=" + repositoryName + "] does not contain a key[" + key + "]");
-//            }
+            if("symphony_user".equals(repositoryName)){
+                System.out.println("");
+            }
+            if (!keyDescription.optBoolean("nullable") && !nameSet.contains(key)) {
+                throw new RepositoryException(
+                    "A json object to persist to repository[name=" + repositoryName + "] does not contain a key[" + key + "]");
+            }
 
             // TODO: 88250, type and length validation
             /*

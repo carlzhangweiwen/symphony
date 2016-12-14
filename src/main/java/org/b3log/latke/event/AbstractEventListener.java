@@ -54,7 +54,7 @@ public abstract class AbstractEventListener<T> implements Serializable {
      * @param eventQueue the specified event
      * @param event the specified event
      * @throws EventException event exception
-     * @see #action(org.b3log.latke.event.Event)
+     * @see #action(Event)
      */
     final void performAction(final AbstractEventQueue eventQueue, final Event<?> event) throws EventException {
         @SuppressWarnings("unchecked")

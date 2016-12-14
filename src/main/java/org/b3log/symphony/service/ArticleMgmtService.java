@@ -1496,7 +1496,7 @@ public class ArticleMgmtService {
         for (final String tagTitle : tags) {
             final JSONObject tag = tagRepository.getByTitle(tagTitle);
 
-            if(tag != null) builder.append(tag.optString(Tag.TAG_TITLE)).append(",");
+            builder.append(tag.optString(Tag.TAG_TITLE)).append(",");
         }
         if (builder.length() > 0) {
             builder.deleteCharAt(builder.length() - 1);

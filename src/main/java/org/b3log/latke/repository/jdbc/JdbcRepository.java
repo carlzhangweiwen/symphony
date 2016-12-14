@@ -634,7 +634,6 @@ public final class JdbcRepository implements Repository {
 
         sql.append(JdbcFactory.createJdbcFactory().queryPage(start, end, selectSql.toString(), filterSql.toString(),
                 orderBySql.toString(), getName()));
-        LOGGER.debug(sql.toString());
     }
 
     /**

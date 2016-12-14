@@ -36,7 +36,7 @@ public interface Transaction {
      *
      * <p>
      * <b>Throws</b>:<br/>
-     * {@link java.lang.IllegalStateException} - if the transaction has already 
+     * {@link IllegalStateException} - if the transaction has already
      * been committed, rolled back
      * </p>
      */
@@ -47,7 +47,7 @@ public interface Transaction {
      *
      * <p>
      * <b>Throws</b>:<br/>
-     * {@link java.lang.IllegalStateException} - if the transaction has already
+     * {@link IllegalStateException} - if the transaction has already
      * been committed, rolled back
      * </p>
      */

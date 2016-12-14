@@ -61,75 +61,6 @@ import org.b3log.latke.servlet.advice.BeforeRequestProcessAdvice;
 @Named("beanManager")
 @Singleton
 public class LatkeBeanManagerImpl implements LatkeBeanManager {
-    @Override
-    public boolean areQualifiersEquivalent(Annotation annotation, Annotation annotation1) {
-        return false;
-    }
-
-    @Override
-    public boolean areInterceptorBindingsEquivalent(Annotation annotation, Annotation annotation1) {
-        return false;
-    }
-
-    @Override
-    public int getQualifierHashCode(Annotation annotation) {
-        return 0;
-    }
-
-    @Override
-    public int getInterceptorBindingHashCode(Annotation annotation) {
-        return 0;
-    }
-
-    @Override
-    public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
-        return null;
-    }
-
-    @Override
-    public <X> ProducerFactory<X> getProducerFactory(AnnotatedField<? super X> annotatedField, Bean<X> bean) {
-        return null;
-    }
-
-    @Override
-    public <X> ProducerFactory<X> getProducerFactory(AnnotatedMethod<? super X> annotatedMethod, Bean<X> bean) {
-        return null;
-    }
-
-    @Override
-    public <T> BeanAttributes<T> createBeanAttributes(AnnotatedType<T> annotatedType) {
-        return null;
-    }
-
-    @Override
-    public BeanAttributes<?> createBeanAttributes(AnnotatedMember<?> annotatedMember) {
-        return null;
-    }
-
-    @Override
-    public <T> Bean<T> createBean(BeanAttributes<T> beanAttributes, Class<T> aClass, InjectionTargetFactory<T> injectionTargetFactory) {
-        return null;
-    }
-
-    @Override
-    public <T, X> Bean<T> createBean(BeanAttributes<T> beanAttributes, Class<X> aClass, ProducerFactory<X> producerFactory) {
-        return null;
-    }
-
-    @Override
-    public InjectionPoint createInjectionPoint(AnnotatedField<?> annotatedField) {
-        return null;
-    }
-
-    @Override
-    public InjectionPoint createInjectionPoint(AnnotatedParameter<?> annotatedParameter) {
-        return null;
-    }
-
-    @Override
-    public <T extends Extension> T getExtension(Class<T> aClass) {
-        return null;
-    }
 
     /**
      * Logger.
@@ -168,7 +99,7 @@ public class LatkeBeanManagerImpl implements LatkeBeanManager {
     }
 
     @Override
-    public ExpressionFactory wrapExpressionFactory(final javax.el.ExpressionFactory expressionFactory) {
+    public ExpressionFactory wrapExpressionFactory(final ExpressionFactory expressionFactory) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -403,6 +334,26 @@ public class LatkeBeanManagerImpl implements LatkeBeanManager {
     }
 
     @Override
+    public boolean areQualifiersEquivalent(Annotation annotation, Annotation annotation1) {
+        return false;
+    }
+
+    @Override
+    public boolean areInterceptorBindingsEquivalent(Annotation annotation, Annotation annotation1) {
+        return false;
+    }
+
+    @Override
+    public int getQualifierHashCode(Annotation annotation) {
+        return 0;
+    }
+
+    @Override
+    public int getInterceptorBindingHashCode(Annotation annotation) {
+        return 0;
+    }
+
+    @Override
     public void addContext(final Context context) {
         final Class<? extends Annotation> scope = context.getScope();
         Set<Context> contextSet = contexts.get(scope);
@@ -453,6 +404,56 @@ public class LatkeBeanManagerImpl implements LatkeBeanManager {
     @Override
     public <T> InjectionTarget<T> createInjectionTarget(final AnnotatedType<T> type) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
+        return null;
+    }
+
+    @Override
+    public <X> ProducerFactory<X> getProducerFactory(AnnotatedField<? super X> annotatedField, Bean<X> bean) {
+        return null;
+    }
+
+    @Override
+    public <X> ProducerFactory<X> getProducerFactory(AnnotatedMethod<? super X> annotatedMethod, Bean<X> bean) {
+        return null;
+    }
+
+    @Override
+    public <T> BeanAttributes<T> createBeanAttributes(AnnotatedType<T> annotatedType) {
+        return null;
+    }
+
+    @Override
+    public BeanAttributes<?> createBeanAttributes(AnnotatedMember<?> annotatedMember) {
+        return null;
+    }
+
+    @Override
+    public <T> Bean<T> createBean(BeanAttributes<T> beanAttributes, Class<T> aClass, InjectionTargetFactory<T> injectionTargetFactory) {
+        return null;
+    }
+
+    @Override
+    public <T, X> Bean<T> createBean(BeanAttributes<T> beanAttributes, Class<X> aClass, ProducerFactory<X> producerFactory) {
+        return null;
+    }
+
+    @Override
+    public InjectionPoint createInjectionPoint(AnnotatedField<?> annotatedField) {
+        return null;
+    }
+
+    @Override
+    public InjectionPoint createInjectionPoint(AnnotatedParameter<?> annotatedParameter) {
+        return null;
+    }
+
+    @Override
+    public <T extends Extension> T getExtension(Class<T> aClass) {
+        return null;
     }
 
     @Override

@@ -40,7 +40,7 @@ public interface URLFetchService {
 
     /**
      * The asynchronous version of interface 
-     * {@link #fetch(org.b3log.latke.urlfetch.HTTPRequest)}.
+     * {@link #fetch(HTTPRequest)}.
      * 
      * @param request the specified request
      * @return future response 

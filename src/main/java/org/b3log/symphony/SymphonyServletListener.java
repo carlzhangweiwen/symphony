@@ -108,7 +108,7 @@ public final class SymphonyServletListener extends AbstractServletListener {
         beanManager = Lifecycle.getBeanManager();
 
         // Init database if need
-        //initDB();
+//        initDB();
 
         // Register event listeners
         final EventManager eventManager = beanManager.getReference(EventManager.class);

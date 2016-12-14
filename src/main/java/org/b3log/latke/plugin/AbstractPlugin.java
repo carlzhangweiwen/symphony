@@ -53,7 +53,7 @@ import org.json.JSONObject;
  *
  * <p>
  * Id of a plugin is {@linkplain #name name}_{@linkplain #version version}. See {@link PluginManager#setPluginProps} for more details.
- * If the id of one plugin {@linkplain #equals(java.lang.Object) equals} to another's, considering they are the same.
+ * If the id of one plugin {@linkplain #equals(Object) equals} to another's, considering they are the same.
  * </p>
  *
  * <p>
@@ -354,7 +354,7 @@ public abstract class AbstractPlugin implements Serializable {
      * </p>
      *
      * @param dataModel the specified data model
-     * @see Keys#fillServer(java.util.Map)
+     * @see Keys#fillServer(Map)
      */
     private void fillDefault(final Map<String, Object> dataModel) {
         Keys.fillServer(dataModel);

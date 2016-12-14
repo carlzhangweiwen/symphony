@@ -36,7 +36,7 @@ import org.json.JSONObject;
  *
  * <p>
  * This is a base adapter for wrapped {@link #repository repository}, the underlying repository will be instantiated in
- * the {@link #AbstractRepository(java.lang.String) constructor} with
+ * the {@link #AbstractRepository(String) constructor} with
  * {@link Latkes#getRuntimeEnv() the current runtime environment}.
  * </p>
  *
@@ -163,8 +163,6 @@ public abstract class AbstractRepository implements Repository {
         try {
             return repository.get(query);
         } catch (final JDBCRepositoryException e) {
-            e.printStackTrace();
-
             LOGGER.log(Level.WARN, "SQL exception[msg={0}, repository={1}, query={2}]", e.getMessage(), repository.getName(),
                     query.toString());
 

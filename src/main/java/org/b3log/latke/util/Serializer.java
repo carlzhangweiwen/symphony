@@ -27,7 +27,7 @@ import java.io.Serializable;
 
 /**
  * A standard object serializer to serialize and deserialize for an object that
- * implemented {@link java.io.Serializable}.
+ * implemented {@link Serializable}.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
  * @version 1.0.0.2, Aug 13, 2010

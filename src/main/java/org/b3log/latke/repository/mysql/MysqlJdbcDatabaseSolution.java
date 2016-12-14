@@ -16,13 +16,19 @@
 package org.b3log.latke.repository.mysql;
 
 
-import org.apache.commons.lang.StringUtils;
-import org.b3log.latke.repository.jdbc.AbstractJdbcDatabaseSolution;
-import org.b3log.latke.repository.jdbc.mapping.*;
-import org.b3log.latke.repository.jdbc.util.FieldDefinition;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.b3log.latke.repository.jdbc.AbstractJdbcDatabaseSolution;
+import org.b3log.latke.repository.jdbc.mapping.BooleanMapping;
+import org.b3log.latke.repository.jdbc.mapping.DateMapping;
+import org.b3log.latke.repository.jdbc.mapping.IntMapping;
+import org.b3log.latke.repository.jdbc.mapping.LongMapping;
+import org.b3log.latke.repository.jdbc.mapping.Mapping;
+import org.b3log.latke.repository.jdbc.mapping.NumberMapping;
+import org.b3log.latke.repository.jdbc.mapping.StringMapping;
+import org.b3log.latke.repository.jdbc.util.FieldDefinition;
 
 
 /**
@@ -53,11 +59,11 @@ public class MysqlJdbcDatabaseSolution extends AbstractJdbcDatabaseSolution {
         final StringBuilder sql = new StringBuilder();
 
         sql.append(selectSql).append(" from ").append(tableName);
-        if(StringUtils.isNotBlank(filterSql)) {
+        if (StringUtils.isNotBlank(filterSql)) {
             sql.append(" where ").append(filterSql);
         }
         sql.append(orderBySql);
-        sql.append(" limit ").append(start).append(",").append(end - start);
+//        sql.append(" limit ").append(start).append(",").append(end - start);
         return sql.toString();
     }
 
@@ -65,7 +71,9 @@ public class MysqlJdbcDatabaseSolution extends AbstractJdbcDatabaseSolution {
     public String getRandomlySql(final String tableName, final int fetchSize) {
         final StringBuilder sql = new StringBuilder();
 
-        sql.append(" SELECT * FROM ").append(tableName).append(" ORDER BY RAND() LIMIT ").append(fetchSize);
+        sql.append(" SELECT * FROM ").append(tableName)
+                .append(" ORDER BY RAND() LIMIT ")
+                .append(fetchSize);
         return sql.toString();
     }
 

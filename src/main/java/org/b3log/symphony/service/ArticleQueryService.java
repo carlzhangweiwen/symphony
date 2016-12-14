@@ -38,6 +38,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.b3log.latke.Keys;
 import org.b3log.latke.Latkes;
+import org.b3log.latke.RuntimeDatabase;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.model.Pagination;
@@ -1652,7 +1653,7 @@ public class ArticleQueryService {
             List<JSONObject> ret;
             Stopwatchs.start("Query index recent articles");
             try {
-                ret = articleRepository.select("SELECT\n"
+                String sql = "SELECT\n"
                         + "	oId,\n"
                         + "	articleStick,\n"
                         + "	articleCreateTime,\n"
@@ -1683,8 +1684,15 @@ public class ArticleQueryService {
                         + " ORDER BY\n"
                         + "	articleStick DESC,\n"
                         + "	flag DESC\n"
-//                        + "LIMIT ?"
-                        , Symphonys.getInt("indexListCnt")
+                        ;
+
+                if(RuntimeDatabase.ORACLE == Latkes.getRuntimeDatabase()){
+                    sql = "SELECT * FROM (" + sql + ") WHERE ROWNUM <= ?";
+                }else {
+                    sql += "LIMIT ?";
+                }
+
+                ret = articleRepository.select(sql, Symphonys.getInt("indexListCnt")
                 );
             } finally {
                 Stopwatchs.end();

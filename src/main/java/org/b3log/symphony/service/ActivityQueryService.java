@@ -24,6 +24,8 @@ import java.util.List;
 import javax.inject.Inject;
 import org.apache.commons.lang.time.DateUtils;
 import org.b3log.latke.Keys;
+import org.b3log.latke.Latkes;
+import org.b3log.latke.RuntimeDatabase;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.repository.Query;
@@ -138,7 +140,8 @@ public class ActivityQueryService {
         final List<JSONObject> ret = new ArrayList<>();
 
         try {
-            final List<JSONObject> users = userRepository.select("SELECT\n"
+
+            String sql = "SELECT\n"
                     + "	u.*, Sum(sum) AS point\n"
                     + "FROM\n"
                     + "	" + pointtransferRepository.getName() + " AS p,\n"
@@ -150,8 +153,15 @@ public class ActivityQueryService {
                     + "	toId\n"
                     + "ORDER BY\n"
                     + "	point DESC\n"
-//                    + "LIMIT ?"
-                    , fetchSize);
+                    ;
+
+            if(RuntimeDatabase.ORACLE == Latkes.getRuntimeDatabase()){
+                sql = "SELECT * FROM (" + sql + ") WHERE ROWNUM <= ?";
+            }else {
+                sql += "LIMIT ?";
+            }
+
+            final List<JSONObject> users = userRepository.select(sql, fetchSize);
 
             for (final JSONObject user : users) {
                 avatarQueryService.fillUserAvatarURL(avatarViewMode, user);

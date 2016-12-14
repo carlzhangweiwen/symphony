@@ -63,7 +63,7 @@ public class MysqlJdbcDatabaseSolution extends AbstractJdbcDatabaseSolution {
             sql.append(" where ").append(filterSql);
         }
         sql.append(orderBySql);
-//        sql.append(" limit ").append(start).append(",").append(end - start);
+        sql.append(" limit ").append(start).append(",").append(end - start);
         return sql.toString();
     }
 
@@ -71,8 +71,7 @@ public class MysqlJdbcDatabaseSolution extends AbstractJdbcDatabaseSolution {
     public String getRandomlySql(final String tableName, final int fetchSize) {
         final StringBuilder sql = new StringBuilder();
 
-        sql.append(" SELECT * FROM ").append(tableName)
-                .append(" ORDER BY RAND() LIMIT ")
+        sql.append(" SELECT * FROM ").append(tableName).append(" ORDER BY RAND() LIMIT ?")
                 .append(fetchSize);
         return sql.toString();
     }

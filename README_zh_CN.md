@@ -253,6 +253,8 @@ Maven3+、MySQL5.5+、Jetty9+/Tomcat9+
 3. 使用 `mvn install` 进行构建
 4. 将构建好的 war 包部署到容器中，数据库表会在第一次启动时自动建立
 
+5.org.b3log.symphony.SymphonyServletListener.contextInitialized()中可以控制初始化数据库表 initDB();
+
 注意：
 
 * 没有数据库建表 SQL 脚本，手动建库后，表会在第一次启动时自动生成

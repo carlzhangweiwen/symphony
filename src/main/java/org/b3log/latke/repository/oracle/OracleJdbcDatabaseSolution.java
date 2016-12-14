@@ -37,13 +37,13 @@ public class OracleJdbcDatabaseSolution extends AbstractJdbcDatabaseSolution {
         }
 
         sql.append(orderBySql);
-        sql.append(") WHERE 1 =1  and rownum > ").append(start).append(" and rownum < ").append(end);
+        sql.append(") WHERE 1 =1  and rownum > ").append(start).append(" and rownum <= ").append(end);
         return sql.toString();
     }
 
     public String getRandomlySql(String tableName, int fetchSize) {
         StringBuilder sql = new StringBuilder();
-        sql.append(" SELECT * FROM ").append(tableName).append(" where rownum < ").append(fetchSize).append(" ORDER BY dbms_random.value() ");
+        sql.append(" SELECT * FROM ").append(tableName).append(" where rownum <= ").append(fetchSize).append(" ORDER BY dbms_random.value() ");
         return sql.toString();
     }
 

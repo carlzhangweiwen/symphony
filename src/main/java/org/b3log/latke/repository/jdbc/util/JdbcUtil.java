@@ -239,7 +239,7 @@ public final class JdbcUtil {
                         } finally {
 
                             if(RuntimeDatabase.ORACLE == Latkes.getRuntimeDatabase()){
-                                //no need exec clob.free
+                                //no need exec clob.free, if exec, system will not ok
                                 try {
                                     clobCharacterStream.close();
                                 } catch (IOException e) {

@@ -10,7 +10,7 @@ public class DoubleMapping  implements Mapping {
 
     @Override
     public String toDataBaseSting(final FieldDefinition definition) {
-        final StringBuilder builder = new StringBuilder(definition.getName()).append(" number(15,2)");
+        final StringBuilder builder = new StringBuilder(definition.getName()).append(" number");
 
 //        if (!definition.getNullable()) {
 //            builder.append(" not null");
